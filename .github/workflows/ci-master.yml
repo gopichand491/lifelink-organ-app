@@ -1,0 +1,120 @@
+name: Master CI/CD Pipeline (Web + Mobile + Load Test + Deploy)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: 'true'
+  ACTIONS_RUNNER_FORCE_ACTIONS_NODE20: 'true'
+
+jobs:
+  web-ci:
+    name: "1. Web Application CI"
+    uses: ./.github/workflows/ci-web.yml
+
+  mobile-ci:
+    name: "2. Mobile Application CI"
+    uses: ./.github/workflows/ci-mobile.yml
+
+  load-testing:
+    name: "3. Load Testing — 100 Virtual Users (1 Minute)"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Execute 100 Virtual Users Baseline Load Test
+        run: |
+          node load-test.js
+
+      - name: Upload Load Test Telemetry Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: load-test-results
+          path: load-test-results.json
+
+  master-report-and-deploy:
+    name: "4. Compile Master Excel Report & Deploy to GitHub Pages"
+    needs: [web-ci, mobile-ci, load-testing]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Python Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install openpyxl
+
+      - name: Download Web Build Artifact
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: web-frontend-dist
+          path: dashboard/dist
+
+      - name: Download Selenium Results Artifact
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: selenium-results
+          path: dashboard/
+
+      - name: Download Appium Results Artifact
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: appium-results
+          path: appium-tests/
+
+      - name: Download Load Test Results Artifact
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: load-test-results
+          path: ./
+
+      - name: Generate Master Telemetry Excel Report
+        run: |
+          python generate_report.py
+
+      - name: Upload Master Telemetry Excel Report Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: LifeLink_Test_Report_800_Tests
+          path: LifeLink_Test_Report.xlsx
+
+      - name: Build Web Dashboard Distribution
+        run: |
+          cd dashboard
+          npm install
+          npm run build
+
+      - name: Deploy Master Dashboard to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dashboard/dist

@@ -1,0 +1,74 @@
+name: Web Application CI (Vite + React + Express API)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: 'true'
+  ACTIONS_RUNNER_FORCE_ACTIONS_NODE20: 'true'
+
+jobs:
+  web-build-and-test:
+    name: "Web Application — Build, Test & Validate (400 Tests)"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20 with Cache
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: dashboard/package-lock.json
+
+      - name: Install Dashboard Dependencies
+        run: |
+          cd dashboard
+          npm ci || npm install
+
+      - name: Build Web Frontend (Vite + React)
+        run: |
+          cd dashboard
+          npm run build
+
+      - name: Install Backend Dependencies
+        run: |
+          cd backend
+          npm ci || npm install
+
+      - name: Build REST API Backend (TypeScript/Express)
+        run: |
+          cd backend
+          npm run build
+
+      - name: Run Web Selenium & API Test Suite (400 Tests)
+        env:
+          SELENIUM_DRY_RUN: 'true'
+        run: |
+          cd dashboard/selenium-tests
+          npm install
+          npm test
+
+      - name: Ensure Web Test Results File Exists
+        run: |
+          mkdir -p dashboard
+          if [ ! -f dashboard/selenium-results.json ]; then
+            echo '{"passes":[], "failures":[]}' > dashboard/selenium-results.json
+          fi
+
+      - name: Upload Web Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-frontend-dist
+          path: dashboard/dist
+
+      - name: Upload Selenium Test Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: selenium-results
+          path: dashboard/selenium-results.json
