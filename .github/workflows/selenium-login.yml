@@ -8,10 +8,10 @@ on:
 
 jobs:
   # ─────────────────────────────────────────────────────────
-  # JOB 1: Selenium Web Tests + API Contract Tests + Security Tests (150 tests)
+  # JOB 1: Selenium Web Tests + API Contract Tests + Security Tests (200 tests)
   # ─────────────────────────────────────────────────────────
   selenium-tests:
-    name: Selenium E2E Web + API + Security Tests (150 Tests)
+    name: Selenium E2E Web + API + Security Tests (200 Tests)
     runs-on: ubuntu-latest
 
     steps:
@@ -65,7 +65,7 @@ jobs:
           timeout 30 bash -c 'until curl -s http://localhost:5173; do sleep 2; done'
           echo "Both servers are ready!"
 
-      - name: Run API Contract Tests (55 tests)
+      - name: Run API Contract Tests (70 tests)
         run: npx mocha selenium-tests/tests/api.test.js --timeout 60000 --reporter spec
         working-directory: dashboard
         env:
@@ -83,7 +83,7 @@ jobs:
           TEST_URL: http://localhost:5173/lifelink-organ-app
           API_URL: http://localhost:4000
 
-      - name: Run Pages E2E Tests (55 tests)
+      - name: Run Pages E2E Tests (70 tests)
         run: npx mocha selenium-tests/tests/pages.test.js --timeout 60000 --reporter spec
         working-directory: dashboard
         env:
@@ -92,7 +92,7 @@ jobs:
           TEST_URL: http://localhost:5173/lifelink-organ-app
           API_URL: http://localhost:4000
 
-      - name: Run Security & Input Validation Tests (20 tests)
+      - name: Run Security & Input Validation Tests (40 tests)
         run: npx mocha selenium-tests/tests/security.test.js --timeout 60000 --reporter spec
         working-directory: dashboard
         env:
@@ -126,7 +126,7 @@ jobs:
 
       - name: Test Summary
         if: always()
-        run: echo "Selenium E2E + API + Security tests completed. 150 test assertions run."
+        run: echo "Selenium E2E + API + Security tests completed. 200 test assertions run."
 
   # ─────────────────────────────────────────────────────────
   # JOB 2: Appium Mobile Tests Dry-Run (200 tests)
@@ -215,11 +215,11 @@ jobs:
           echo "=========================================="
           echo "  LifeLink Test Suite — CI/CD Summary"
           echo "=========================================="
-          echo "  Web Selenium Tests :  150 assertions"
-          echo "    ├─ API Suite     :   55 tests"
+          echo "  Web Selenium Tests :  200 assertions"
+          echo "    ├─ API Suite     :   70 tests"
           echo "    ├─ Auth Suite    :   20 tests"
-          echo "    ├─ Pages Suite   :   55 tests"
-          echo "    └─ Security Suite:   20 tests"
+          echo "    ├─ Pages Suite   :   70 tests"
+          echo "    └─ Security Suite:   40 tests"
           echo "  Mobile Appium Tests:  200 assertions"
           echo "    ├─ Auth          :   20 tests"
           echo "    ├─ Dashboard     :   20 tests"
@@ -236,7 +236,7 @@ jobs:
           echo "    ├─ Deep Links    :   10 tests"
           echo "    └─ Search/Filter :   10 tests"
           echo "  ─────────────────────────────────"
-          echo "  Total              :  350 assertions"
+          echo "  Total              :  400 assertions"
           echo "  Pass Rate          :  100%"
           echo "  Excel Report       :  LifeLink_Test_Report.xlsx"
           echo "=========================================="

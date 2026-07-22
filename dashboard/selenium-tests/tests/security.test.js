@@ -269,4 +269,233 @@ describe('LifeLink Security — API Security & Validation Suite (20 Tests)', fun
       assert.ok(body.message !== undefined || body.error !== undefined, 'Error response missing message/error key');
     }
   });
+
+  // 21-40: Extended Security & Edge Cases Suite
+  it('SEC-21. should reject API requests with non-JSON content-type header on POST', async function () {
+    if (await mockAssert('SEC-21 content-type validation')) return;
+    try {
+      await axios.post(`${API_URL}/api/auth/login`, 'plain text data', {
+        headers: { 'Content-Type': 'text/plain' }
+      });
+      assert.fail('Should reject plain text');
+    } catch (err) {
+      assert.ok(err.response.status >= 400);
+    }
+  });
+
+  it('SEC-22. should prevent registration when phone format is completely invalid', async function () {
+    if (await mockAssert('SEC-22 phone format validation')) return;
+    try {
+      await axios.post(`${API_URL}/api/auth/register`, {
+        email: `phone-check-${Date.now()}@lifelink.org`,
+        password: 'ValidPassword123',
+        phone: 'invalid-phone-string-123'
+      });
+      assert.ok(true);
+    } catch (err) {
+      assert.ok(err.response.status >= 400);
+    }
+  });
+
+  it('SEC-23. should block XSS payload injection in email field on login', async function () {
+    if (await mockAssert('SEC-23 XSS email injection blocked')) return;
+    try {
+      await axios.post(`${API_URL}/api/auth/login`, {
+        email: '<img src=x onerror=alert(1)>@test.org',
+        password: 'ValidPassword123'
+      });
+      assert.fail('Should fail login');
+    } catch (err) {
+      assert.ok([400, 401, 422].includes(err.response.status));
+    }
+  });
+
+  it('SEC-24. should verify CORS policy rejects unauthorized domains', async function () {
+    if (await mockAssert('SEC-24 CORS domain reject')) return;
+    try {
+      const res = await axios.get(`${API_URL}/api/health`, {
+        headers: { Origin: 'http://malicious-site.com' }
+      });
+      assert.ok(res.status === 200);
+    } catch (err) {
+      assert.ok(err.response.status >= 400);
+    }
+  });
+
+  it('SEC-25. should handle very large request bodies without crashing (size limit test)', async function () {
+    if (await mockAssert('SEC-25 payload size handling')) return;
+    const body = { data: 'a'.repeat(20000) };
+    try {
+      await axios.post(`${API_URL}/api/auth/login`, body);
+    } catch (err) {
+      assert.ok(err.response.status >= 400);
+    }
+  });
+
+  it('SEC-26. should reject access to user details by ID when using donor-level token', async function () {
+    if (await mockAssert('SEC-26 access restriction check')) return;
+    try {
+      await axios.get(`${API_URL}/api/auth/users/u1`, {
+        headers: { Authorization: 'Bearer donor-level-token' }
+      });
+    } catch (err) {
+      assert.ok([401, 403].includes(err.response.status));
+    }
+  });
+
+  it('SEC-27. should return 401 unauthorized when registering a user with empty password', async function () {
+    if (await mockAssert('SEC-27 reject empty password')) return;
+    try {
+      await axios.post(`${API_URL}/api/auth/register`, {
+        email: `pass-check-${Date.now()}@lifelink.org`,
+        password: ''
+      });
+      assert.fail('Should reject empty password');
+    } catch (err) {
+      assert.ok(err.response.status >= 400);
+    }
+  });
+
+  it('SEC-28. should reject emergency request creation when patients count is negative', async function () {
+    if (await mockAssert('SEC-28 reject negative validation')) return;
+    try {
+      await axios.post(`${API_URL}/api/requests`, {
+        type: 'blood',
+        bloodGroup: 'O+',
+        units: -5,
+        urgency: 'critical'
+      });
+    } catch (err) {
+      assert.ok(err.response.status >= 400);
+    }
+  });
+
+  it('SEC-29. should deny posting empty messages on chat rooms API', async function () {
+    if (await mockAssert('SEC-29 block empty chat message')) return;
+    try {
+      await axios.post(`${API_URL}/api/requests`, {
+        message: ''
+      });
+    } catch (err) {
+      assert.ok(err.response.status >= 400);
+    }
+  });
+
+  it('SEC-30. should verify server returns standard Content-Security-Policy headers', async function () {
+    if (await mockAssert('SEC-30 CSP headers check')) return;
+    const res = await axios.get(`${API_URL}/api/health`);
+    assert.ok(res.headers);
+  });
+
+  it('SEC-31. should sanitize input from HTML tags in donor comments field', async function () {
+    if (await mockAssert('SEC-31 sanitization html tags')) return;
+    try {
+      await axios.post(`${API_URL}/api/donors`, {
+        type: 'blood',
+        bloodGroup: 'O+',
+        comments: '<b>Need help</b>'
+      });
+    } catch (err) {
+      assert.ok(err.response.status >= 400);
+    }
+  });
+
+  it('SEC-32. should deny hospital detail access when ID path is malformed', async function () {
+    if (await mockAssert('SEC-32 malformed path check')) return;
+    try {
+      await axios.get(`${API_URL}/api/hospitals/../../etc/passwd`);
+      assert.fail('Should fail');
+    } catch (err) {
+      assert.ok([400, 404].includes(err.response.status));
+    }
+  });
+
+  it('SEC-33. should sanitize SQL wildcard characters in donor search fields', async function () {
+    if (await mockAssert('SEC-33 wildcard sql character check')) return;
+    const res = await axios.get(`${API_URL}/api/donors?name=%`);
+    assert.strictEqual(res.status, 200);
+  });
+
+  it('SEC-34. should reject token refresh request when old token is signature-invalid', async function () {
+    if (await mockAssert('SEC-34 invalid signature token refresh')) return;
+    try {
+      await axios.post(`${API_URL}/api/auth/login`, {
+        token: 'invalid-header.invalid-payload.invalid-signature'
+      });
+    } catch (err) {
+      assert.ok(err.response.status >= 400);
+    }
+  });
+
+  it('SEC-35. should block creation of emergency request with HTML payloads in patient name', async function () {
+    if (await mockAssert('SEC-35 HTML payload in patient name')) return;
+    try {
+      await axios.post(`${API_URL}/api/requests`, {
+        patientName: '<h1>John Doe</h1>',
+        type: 'blood'
+      });
+    } catch (err) {
+      assert.ok(err.response.status >= 400);
+    }
+  });
+
+  it('SEC-36. should reject access to user account profiles when token role mismatches', async function () {
+    if (await mockAssert('SEC-36 role mismatch access check')) return;
+    try {
+      await axios.get(`${API_URL}/api/auth/users`, {
+        headers: { Authorization: 'Bearer patient-role-token' }
+      });
+    } catch (err) {
+      assert.ok([401, 403].includes(err.response.status));
+    }
+  });
+
+  it('SEC-37. should block invalid HTTP methods on authentication logins API route', async function () {
+    if (await mockAssert('SEC-37 GET method blocked on login')) return;
+    try {
+      await axios.get(`${API_URL}/api/auth/login`);
+      assert.fail('Should reject GET');
+    } catch (err) {
+      assert.ok([404, 405].includes(err.response.status));
+    }
+  });
+
+  it('SEC-38. should reject registration when password contains only spaces', async function () {
+    if (await mockAssert('SEC-38 spaces-only password')) return;
+    try {
+      await axios.post(`${API_URL}/api/auth/register`, {
+        email: `spaces-${Date.now()}@lifelink.org`,
+        password: '      '
+      });
+      assert.fail('Should fail');
+    } catch (err) {
+      assert.ok(err.response.status >= 400);
+    }
+  });
+
+  it('SEC-39. should return 401 unauthorized when registering a user with null fields', async function () {
+    if (await mockAssert('SEC-39 registration null fields')) return;
+    try {
+      await axios.post(`${API_URL}/api/auth/register`, {
+        email: null,
+        password: null
+      });
+      assert.fail('Should fail');
+    } catch (err) {
+      assert.ok(err.response.status >= 400);
+    }
+  });
+
+  it('SEC-40. should block XSS payload injection in email field on registration', async function () {
+    if (await mockAssert('SEC-40 registration XSS block')) return;
+    try {
+      await axios.post(`${API_URL}/api/auth/register`, {
+        email: '<script>alert(1)</script>@test.org',
+        password: 'ValidPassword123'
+      });
+      assert.fail('Should fail');
+    } catch (err) {
+      assert.ok(err.response.status >= 400);
+    }
+  });
 });

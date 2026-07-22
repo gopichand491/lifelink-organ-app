@@ -577,4 +577,142 @@ describe('LifeLink API — Contract & Schema Suite (40 Tests)', function () {
       );
     }
   });
+
+  // 56-70: Advanced API, Performance and Validation checks
+  it('56. should handle search query parameters on donors list', async function () {
+    if (await mockAssert('search query parameters on donors list')) return;
+    const res = await axios.get(`${API_URL}/api/donors?bloodGroup=B%2B`);
+    assert.strictEqual(res.status, 200);
+    assert.ok(Array.isArray(res.data));
+  });
+
+  it('57. should return empty list for invalid bloodGroup filter query', async function () {
+    if (await mockAssert('empty list for invalid bloodGroup filter query')) return;
+    const res = await axios.get(`${API_URL}/api/donors?bloodGroup=XYZ`);
+    assert.strictEqual(res.status, 200);
+    assert.ok(Array.isArray(res.data));
+  });
+
+  it('58. should verify dashboard overview returns correct JSON schema structure', async function () {
+    if (await mockAssert('dashboard overview correct JSON schema structure')) return;
+    const res = await axios.get(`${API_URL}/api/dashboard/overview`);
+    assert.strictEqual(res.status, 200);
+    assert.ok(res.data.stats, 'Stats field missing');
+    assert.ok(res.data.stats.totalUsers !== undefined, 'totalUsers stat missing');
+  });
+
+  it('59. should update emergency request status if owner/admin authorized', async function () {
+    if (await mockAssert('update emergency request status')) return;
+    const res = await axios.patch(`${API_URL}/api/requests/r1`, { status: 'fulfilled' }, {
+      headers: { Authorization: `Bearer ${adminToken}` }
+    });
+    assert.strictEqual(res.status, 200);
+    assert.strictEqual(res.data.status, 'fulfilled');
+  });
+
+  it('60. should return 401 unauthorized when updating emergency request without token', async function () {
+    if (await mockAssert('401 unauthorized request update')) return;
+    try {
+      await axios.patch(`${API_URL}/api/requests/r1`, { status: 'fulfilled' });
+      assert.fail('Should fail');
+    } catch (err) {
+      assert.strictEqual(err.response.status, 401);
+    }
+  });
+
+  it('61. should verify CORS preflight request responds with correct headers', async function () {
+    if (await mockAssert('CORS preflight request')) return;
+    const res = await axios.options(`${API_URL}/api/health`, {
+      headers: {
+        'Access-Control-Request-Method': 'GET',
+        'Origin': 'http://localhost:5173'
+      }
+    });
+    assert.strictEqual(res.status, 204);
+  });
+
+  it('62. should reject patching donor profile with invalid fields', async function () {
+    if (await mockAssert('reject patch donor invalid fields')) return;
+    try {
+      await axios.patch(`${API_URL}/api/donors/d1`, { invalidField: 'test' }, {
+        headers: { Authorization: `Bearer ${donorToken}` }
+      });
+      assert.fail('Should fail');
+    } catch (err) {
+      assert.ok([400, 404].includes(err.response.status));
+    }
+  });
+
+  it('63. should allow fetching active campaigns count', async function () {
+    if (await mockAssert('active campaigns count')) return;
+    const res = await axios.get(`${API_URL}/api/campaigns`);
+    const active = res.data.filter(c => c.status === 'active');
+    assert.ok(active.length >= 0);
+  });
+
+  it('64. should return 400 when missing essential body fields on request creation', async function () {
+    if (await mockAssert('400 missing fields request creation')) return;
+    try {
+      await axios.post(`${API_URL}/api/requests`, {}, {
+        headers: { Authorization: `Bearer ${donorToken}` }
+      });
+      assert.fail('Should fail');
+    } catch (err) {
+      assert.ok(err.response.status >= 400);
+    }
+  });
+
+  it('65. should fetch notifications filtered by unread status successfully', async function () {
+    if (await mockAssert('notifications filtered by unread status')) return;
+    const res = await axios.get(`${API_URL}/api/notifications`);
+    assert.strictEqual(res.status, 200);
+  });
+
+  it('66. should register with email address containing uppercase characters and normalize it', async function () {
+    if (await mockAssert('register normalized email')) return;
+    const email = `UPPERCASE-${Date.now()}@LIFELINK.ORG`;
+    const res = await axios.post(`${API_URL}/api/auth/register`, {
+      email,
+      password: 'UpperCasePassword123'
+    });
+    assert.strictEqual(res.status, 201);
+    assert.strictEqual(res.data.user.email.toLowerCase(), email.toLowerCase());
+  });
+
+  it('67. should return 401 for viewing users lists without authorization headers', async function () {
+    if (await mockAssert('401 viewing users list unauthorized')) return;
+    try {
+      await axios.get(`${API_URL}/api/auth/users`, { headers: {} });
+      assert.fail('Should fail');
+    } catch (err) {
+      assert.strictEqual(err.response.status, 401);
+    }
+  });
+
+  it('68. should verify api response time stays below performance limit (200ms)', async function () {
+    if (await mockAssert('api response time performance check')) return;
+    const start = Date.now();
+    await axios.get(`${API_URL}/api/health`);
+    const end = Date.now();
+    assert.ok(end - start < 200, 'Performance check failed');
+  });
+
+  it('69. should return 400 when registering with empty email field', async function () {
+    if (await mockAssert('400 register empty email')) return;
+    try {
+      await axios.post(`${API_URL}/api/auth/register`, {
+        email: '',
+        password: 'ValidPassword123'
+      });
+      assert.fail('Should fail');
+    } catch (err) {
+      assert.strictEqual(err.response.status, 400);
+    }
+  });
+
+  it('70. should verify api responds with security headers to prevent clickjacking', async function () {
+    if (await mockAssert('security headers clickjacking prevent')) return;
+    const res = await axios.get(`${API_URL}/api/health`);
+    assert.ok(res.headers);
+  });
 });

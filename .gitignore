@@ -23,3 +23,16 @@ __pycache__/
 # Test results (generated at runtime)
 selenium-results.json
 LifeLink_Test_Report.xlsx
+
+# Compiled JavaScript files
+src/**/*.js
+backend/src/**/*.js
+dashboard/src/**/*.js
+App.js
+backend/tsconfig.tsbuildinfo
+dashboard/tsconfig.tsbuildinfo
+appium-tests/appium-results.json
+dashboard/tsconfig.tsbuildinfo
+backend/tsconfig.tsbuildinfo
+*.tsbuildinfo
+

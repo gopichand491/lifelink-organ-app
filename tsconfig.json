@@ -12,5 +12,10 @@
   "include": [
     "**/*.ts",
     "**/*.tsx"
+  ],
+  "exclude": [
+    "dashboard/**/*",
+    "backend/**/*",
+    "node_modules/**/*"
   ]
 }

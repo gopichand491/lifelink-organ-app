@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
   },
   title: {
     ...typography.h3,
-    color: colors.textPrimary,
+    color: colors.text,
     textAlign: 'center',
     marginBottom: spacing.xs,
   },
@@ -83,7 +83,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   sectionHeader: {
-    ...typography.subtitle,
+    ...typography.bodySmall,
     color: colors.textSecondary,
     marginBottom: spacing.sm,
     textTransform: 'uppercase',
@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
   markerTitle: {
     ...typography.body,
     fontWeight: '600',
-    color: colors.textPrimary,
+    color: colors.text,
   },
   markerType: {
     ...typography.caption,

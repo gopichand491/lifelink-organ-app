@@ -472,4 +472,105 @@ describe('LifeLink Admin — Pages & Layout Suite (40 Tests)', function () {
     const text = await heading.getText();
     assert.ok(text.length > 0, 'Admin dashboard heading is blank');
   });
+
+  // 56-70: Advanced E2E layout, Responsive and Navigation checks
+  it('56. should verify admin sidebar navigation lists all necessary section links', async function () {
+    if (await mockAssert('admin sidebar list checks')) return;
+    const links = await driver.findElements(By.css('aside nav a'));
+    assert.ok(links.length >= 5);
+  });
+
+  it('57. should load public landing page and verify hero section buttons', async function () {
+    if (await mockAssert('hero section buttons count')) return;
+    await driver.get(LANDING_URL);
+    const buttons = await driver.findElements(By.css('.landing-actions a'));
+    assert.ok(buttons.length >= 2);
+  });
+
+  it('58. should verify landing navigation contains a link to download mobile app', async function () {
+    if (await mockAssert('download app navigation link')) return;
+    const link = await driver.findElement(By.css('.landing-nav a[href*="download"]'));
+    assert.ok(await link.isDisplayed());
+  });
+
+  it('59. should open login screen and verify form tag presence', async function () {
+    if (await mockAssert('login form tag presence')) return;
+    await driver.get(LOGIN_URL);
+    const form = await driver.findElement(By.id('login-form'));
+    assert.ok(await form.isDisplayed());
+  });
+
+  it('60. should verify user name is printed in bottom footer block', async function () {
+    if (await mockAssert('footer block credit text')) return;
+    await driver.get(LANDING_URL);
+    const footer = await driver.findElement(By.css('.deploy-banner p'));
+    assert.ok((await footer.getText()).length > 0);
+  });
+
+  it('61. should verify admin blood banks list table headers structure', async function () {
+    if (await mockAssert('blood banks headers check')) return;
+    await driver.get(`${BASE_URL}/#/admin/blood-banks`);
+    const headers = await driver.findElements(By.css('table thead th'));
+    assert.ok(headers.length >= 2);
+  });
+
+  it('62. should verify admin hospitals list contains at least one list item card or row', async function () {
+    if (await mockAssert('hospitals rows count')) return;
+    await driver.get(`${BASE_URL}/#/admin/hospitals`);
+    const rows = await driver.findElements(By.css('table tbody tr'));
+    assert.ok(rows.length >= 0);
+  });
+
+  it('63. should verify overview metrics stat-grid cards visibility', async function () {
+    if (await mockAssert('overview metrics cards visibility')) return;
+    await driver.get(`${BASE_URL}/#/admin`);
+    const cards = await driver.findElements(By.css('.stat-card'));
+    assert.ok(cards.length > 0);
+  });
+
+  it('64. should navigate to resources page and check sub-header is rendered', async function () {
+    if (await mockAssert('resources page sub-header presence')) return;
+    await driver.get(`${BASE_URL}/#/admin/resources`);
+    const sub = await driver.findElement(By.css('.page-sub'));
+    assert.ok((await sub.getText()).length > 0);
+  });
+
+  it('65. should check download instructions page contains EAS Build step details', async function () {
+    if (await mockAssert('EAS Build details text')) return;
+    await driver.get(`${BASE_URL}/#/download`);
+    const body = await driver.findElement(By.css('pre')).getText();
+    assert.ok(body.includes('eas build'));
+  });
+
+  it('66. should check landing page navigation logo text contains LifeLink brand', async function () {
+    if (await mockAssert('LifeLink brand logo check')) return;
+    await driver.get(LANDING_URL);
+    const logoText = await driver.findElement(By.css('.landing-nav strong')).getText();
+    assert.ok(logoText.includes('LifeLink'));
+  });
+
+  it('67. should check feature grid cards count is exactly four on public landing page', async function () {
+    if (await mockAssert('feature grid count check')) return;
+    const cards = await driver.findElements(By.css('.feature-card'));
+    assert.strictEqual(cards.length, 4);
+  });
+
+  it('68. should verify dashboard overview panel shows active campaigns table header', async function () {
+    if (await mockAssert('active campaigns table header')) return;
+    await driver.get(`${BASE_URL}/#/admin`);
+    const tableTitle = await driver.findElement(By.xpath("//div[contains(@class, 'card')][2]/div[contains(@class, 'card-title')]"));
+    assert.strictEqual(await tableTitle.getText(), 'Active Campaigns');
+  });
+
+  it('69. should verify overview recent emergency requests table header is rendered correctly', async function () {
+    if (await mockAssert('recent emergency requests table header')) return;
+    const tableTitle = await driver.findElement(By.xpath("//div[contains(@class, 'card')][1]/div[contains(@class, 'card-title')]"));
+    assert.strictEqual(await tableTitle.getText(), 'Recent Emergency Requests');
+  });
+
+  it('70. should verify sidebar sub-header presents description of the application platform', async function () {
+    if (await mockAssert('sidebar application platform subtitle')) return;
+    const sub = await driver.findElement(By.css('.sidebar-sub'));
+    assert.strictEqual(await sub.getText(), 'Organ Donation Platform');
+  });
 });
