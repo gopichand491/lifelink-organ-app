@@ -1,6 +1,11 @@
 # Organ Donation & Lifesaving Finder
 
-A production-ready **React Native Expo** healthcare mobile application that connects organ donors, blood donors, patients, hospitals, NGOs, volunteers, and admins during emergency and lifesaving situations.
+### 🌐 Live Web Application & Admin Dashboard
+[![Live Web App](https://img.shields.io/badge/Live_Web_App-Open_LifeLink-red?style=for-the-badge&logo=react)](https://gopichand491.github.io/lifelink-organ-app)
+
+🔗 **Direct Web App Link:** [https://gopichand491.github.io/lifelink-organ-app](https://gopichand491.github.io/lifelink-organ-app)
+
+A production-ready **React Native Expo & Vite+React** healthcare application that connects organ donors, blood donors, patients, hospitals, NGOs, volunteers, and admins during emergency situations.
 
 ![Expo](https://img.shields.io/badge/Expo-52-blue)
 ![React Native](https://img.shields.io/badge/React%20Native-0.76-61DAFB)
