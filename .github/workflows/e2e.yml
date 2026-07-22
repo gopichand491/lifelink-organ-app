@@ -109,9 +109,20 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Execute Performance SLA Tests
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Execute 100 Virtual Users Baseline Load Test (1 Minute)
         run: |
-          echo "Performance SLA Checks Passed (< 200ms latency)"
+          node load-test.js
+
+      - name: Upload Load Test Results Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: load-test-results
+          path: load-test-results.json
 
   compile-report:
     name: "Compile Master Report & Deploy"
@@ -152,6 +163,13 @@ jobs:
         with:
           name: appium-results
           path: appium-tests/
+        continue-on-error: true
+
+      - name: Download Load Test Results Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: load-test-results
+          path: ./
         continue-on-error: true
 
       - name: Generate Master Excel Report

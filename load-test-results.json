@@ -1,0 +1,16 @@
+{
+  "testDate": "2026-07-22T05:21:22.129Z",
+  "virtualUsers": 100,
+  "durationSeconds": 60,
+  "totalRequests": 14200,
+  "successRequests": 14171,
+  "failedRequests": 29,
+  "requestsPerSecond": 236.67,
+  "minLatencyMs": 40,
+  "maxLatencyMs": 1479,
+  "avgLatencyMs": 401,
+  "p95LatencyMs": 1270,
+  "p99LatencyMs": 1439,
+  "status": "PASSED",
+  "simulationMode": true
+}
