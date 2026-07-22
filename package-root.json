@@ -1,0 +1,15 @@
+{
+  "name": "organ-donation-lifesaving-finder-monorepo",
+  "private": true,
+  "scripts": {
+    "backend": "cd backend && npm run dev",
+    "dashboard": "cd dashboard && npm run dev",
+    "mobile": "npx expo start",
+    "mobile:web": "npx expo start --web",
+    "mobile:android": "npx expo start --android",
+    "build:backend": "cd backend && npm run build",
+    "build:dashboard": "cd dashboard && npm run build",
+    "build:apk": "eas build -p android --profile preview",
+    "install:all": "npm install && cd backend && npm install && cd ../dashboard && npm install"
+  }
+}

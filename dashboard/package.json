@@ -1,0 +1,31 @@
+{
+  "name": "lifelink-admin-dashboard",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "homepage": "https://gopichand491.github.io/lifelink-organ-app",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist",
+    "preview": "vite preview",
+    "login": "mocha selenium-tests/tests/login.test.js --timeout 30000"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^7.1.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "chromedriver": "^149.0.3",
+    "gh-pages": "^6.3.0",
+    "mocha": "^11.7.6",
+    "selenium-webdriver": "^4.44.0",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.6"
+  }
+}
