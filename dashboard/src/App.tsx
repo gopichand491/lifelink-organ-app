@@ -9,13 +9,29 @@ import { RequestsPage } from './pages/RequestsPage';
 import { CampaignsPage } from './pages/CampaignsPage';
 import { DownloadPage } from './pages/DownloadPage';
 
+function ProtectedAdminRoute() {
+  const token = localStorage.getItem('lifelink_token');
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+  return <DashboardLayout />;
+}
+
+function PublicLoginRoute() {
+  const token = localStorage.getItem('lifelink_token');
+  if (token) {
+    return <Navigate to="/admin" replace />;
+  }
+  return <LoginPage />;
+}
+
 function App() {
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />
-      <Route path="/login" element={localStorage.getItem('lifelink_token') ? <Navigate to="/admin" /> : <LoginPage />} />
+      <Route path="/login" element={<PublicLoginRoute />} />
       <Route path="/download" element={<DownloadPage />} />
-      <Route path="/admin" element={localStorage.getItem('lifelink_token') ? <DashboardLayout /> : <Navigate to="/login" />}>
+      <Route path="/admin" element={<ProtectedAdminRoute />}>
         <Route index element={<OverviewPage />} />
         <Route path="users" element={<UsersPage />} />
         <Route path="donors" element={<DonorsPage />} />

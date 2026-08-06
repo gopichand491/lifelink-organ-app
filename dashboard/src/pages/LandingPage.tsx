@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
-import { API_BASE } from '../api';
+
+const DIRECT_APK_URL = 'https://expo.dev/artifacts/eas/juXSq8beBfXW6nXcTMuV2W.apk';
 
 export function LandingPage() {
   return (
@@ -8,7 +9,7 @@ export function LandingPage() {
         <strong>❤ LifeLink — Organ Donation & Lifesaving Finder</strong>
         <div style={{ display: 'flex', gap: 16 }}>
           <Link to="/login" className="btn btn-outline" style={{ color: 'white', borderColor: 'white' }}>Admin Login</Link>
-          <Link to="/download" className="btn btn-primary">Get Android App</Link>
+          <a href={DIRECT_APK_URL} target="_blank" rel="noreferrer" className="btn btn-primary">Get Android App</a>
         </div>
       </nav>
 
@@ -20,11 +21,13 @@ export function LandingPage() {
           Android app, web dashboard & live API.
         </p>
         <div className="landing-actions">
-          <Link to="/download" className="btn btn-primary">Download Android APK</Link>
-          <Link to="/login" className="btn btn-secondary">Open Admin Dashboard</Link>
-          <a href={`${API_BASE}/api/health`} target="_blank" rel="noreferrer" className="btn btn-outline" style={{ color: 'white', borderColor: 'white' }}>
-            API Health Check
+          <a href={DIRECT_APK_URL} target="_blank" rel="noreferrer" className="btn btn-primary">
+            📥 Download Android APK
           </a>
+          <Link to="/login" className="btn btn-secondary">Open Admin Dashboard</Link>
+          <Link to="/download" className="btn btn-outline" style={{ color: 'white', borderColor: 'white' }}>
+            Installation Guide
+          </Link>
         </div>
       </section>
 
@@ -50,9 +53,9 @@ export function LandingPage() {
       <footer className="deploy-banner">
         <p>Organ Donation & Lifesaving Finder · College Final Year Project</p>
         <div className="deploy-links">
-          <Link to="/download">APK Download</Link>
+          <a href={DIRECT_APK_URL} target="_blank" rel="noreferrer">Direct APK Download</a>
           <Link to="/login">Admin Dashboard</Link>
-          <a href={`${API_BASE}`} target="_blank" rel="noreferrer">Backend API</a>
+          <Link to="/download">App Guide</Link>
         </div>
       </footer>
     </div>
