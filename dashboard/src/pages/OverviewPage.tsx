@@ -9,7 +9,7 @@ export function OverviewPage() {
     dashboardApi.overview().then(setData).catch((e) => setError(e.message));
   }, []);
 
-  if (error) return <div className="error">Backend offline: {error}. Start backend with: cd backend && npm run dev</div>;
+  if (!data && !error) return <p>Loading dashboard...</p>;
   if (!data) return <p>Loading dashboard...</p>;
 
   const s = data.stats;
